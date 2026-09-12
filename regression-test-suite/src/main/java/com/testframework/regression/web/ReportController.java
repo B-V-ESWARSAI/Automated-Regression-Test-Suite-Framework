@@ -1,14 +1,14 @@
 package com.testframework.regression.web;
 
 import com.testframework.regression.service.ReportService;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,6 +64,60 @@ public class ReportController {
         if ("csv".equalsIgnoreCase(type)) mediaType = MediaType.TEXT_PLAIN;
         else if ("html".equalsIgnoreCase(type)) mediaType = MediaType.TEXT_HTML;
         else if ("junit".equalsIgnoreCase(type)) mediaType = MediaType.APPLICATION_XML;
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(mediaType)
+                .body(resource);
+    }
+
+    @GetMapping("/date/download")
+    public ResponseEntity<FileSystemResource> downloadDateReport(
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "type", defaultValue = "html") String type) {
+        LocalDate queryDate = (date != null) ? date : LocalDate.now();
+        String path;
+        if ("csv".equalsIgnoreCase(type)) {
+            path = reportService.generateCSVReportForDate(queryDate);
+        } else if ("json".equalsIgnoreCase(type)) {
+            path = reportService.generateJSONReportForDate(queryDate);
+        } else {
+            path = reportService.generateHTMLReportForDate(queryDate);
+        }
+
+        FileSystemResource resource = new FileSystemResource(path);
+        String filename = resource.getFilename();
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        if ("csv".equalsIgnoreCase(type)) mediaType = MediaType.TEXT_PLAIN;
+        else if ("html".equalsIgnoreCase(type)) mediaType = MediaType.TEXT_HTML;
+        else if ("json".equalsIgnoreCase(type)) mediaType = MediaType.APPLICATION_JSON;
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(mediaType)
+                .body(resource);
+    }
+
+    @GetMapping("/period/download")
+    public ResponseEntity<FileSystemResource> downloadPeriodReport(
+            @RequestParam(name = "period", defaultValue = "week") String period,
+            @RequestParam(name = "type", defaultValue = "html") String type) {
+        int days = "month".equalsIgnoreCase(period) ? 30 : 7;
+        String path;
+        if ("csv".equalsIgnoreCase(type)) {
+            path = reportService.generateCSVReportForPeriod(period, days);
+        } else if ("json".equalsIgnoreCase(type)) {
+            path = reportService.generateJSONReportForPeriod(period, days);
+        } else {
+            path = reportService.generateHTMLReportForPeriod(period, days);
+        }
+
+        FileSystemResource resource = new FileSystemResource(path);
+        String filename = resource.getFilename();
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        if ("csv".equalsIgnoreCase(type)) mediaType = MediaType.TEXT_PLAIN;
+        else if ("html".equalsIgnoreCase(type)) mediaType = MediaType.TEXT_HTML;
+        else if ("json".equalsIgnoreCase(type)) mediaType = MediaType.APPLICATION_JSON;
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                 .contentType(mediaType)
@@ -130,4 +184,3 @@ public class ReportController {
         public void setExecutionId(String executionId) { this.executionId = executionId; }
     }
 }
-

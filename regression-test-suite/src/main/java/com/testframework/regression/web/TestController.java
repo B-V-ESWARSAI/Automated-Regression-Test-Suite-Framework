@@ -1,13 +1,14 @@
 package com.testframework.regression.web;
 
-import com.testframework.regression.domain.TestCase;
-import com.testframework.regression.domain.TestResult;
-import com.testframework.regression.domain.TestType;
+import com.testframework.regression.domain.*;
 import com.testframework.regression.engine.TestIntegrationEngine;
 import com.testframework.regression.service.TestCaseService;
+import com.testframework.regression.service.TestResultService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -16,10 +17,41 @@ public class TestController {
 
     private final TestCaseService testCaseService;
     private final TestIntegrationEngine testIntegrationEngine;
+    private final TestResultService testResultService;
 
-    public TestController(TestCaseService testCaseService, TestIntegrationEngine testIntegrationEngine) {
+    public TestController(TestCaseService testCaseService, 
+                          TestIntegrationEngine testIntegrationEngine,
+                          TestResultService testResultService) {
         this.testCaseService = testCaseService;
         this.testIntegrationEngine = testIntegrationEngine;
+        this.testResultService = testResultService;
+    }
+
+    // Day-wise test results endpoint (defaults to current date if not provided)
+    @GetMapping("/by-date")
+    public ResponseEntity<DayReportResponseDTO> getResultsByDate(
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        LocalDate queryDate = (date != null) ? date : LocalDate.now();
+        return ResponseEntity.ok(testResultService.getResultsForDate(queryDate));
+    }
+
+    // 30-Day day-by-day historical summary
+    @GetMapping("/history/30days")
+    public ResponseEntity<List<DaySummaryDTO>> getLast30DaysSummary(
+            @RequestParam(name = "days", defaultValue = "30") int days) {
+        return ResponseEntity.ok(testResultService.getLastNDaysSummary(days));
+    }
+
+    // Weekly summary (Last 7 Days)
+    @GetMapping("/summary/weekly")
+    public ResponseEntity<PeriodSummaryDTO> getWeeklySummary() {
+        return ResponseEntity.ok(testResultService.getPeriodSummary("WEEK", 7));
+    }
+
+    // Monthly summary (Last 30 Days)
+    @GetMapping("/summary/monthly")
+    public ResponseEntity<PeriodSummaryDTO> getMonthlySummary() {
+        return ResponseEntity.ok(testResultService.getPeriodSummary("MONTH", 30));
     }
 
     // Test Integration Engine APIs

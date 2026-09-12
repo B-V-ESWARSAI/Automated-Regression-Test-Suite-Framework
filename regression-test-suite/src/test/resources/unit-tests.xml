@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Unit-TestSuite">
+    <test name="Service-Unit-Tests">
+        <classes>
+            <class name="com.testframework.regression.TestResultServiceTest" />
+            <class name="com.testframework.regression.ReportServiceTest" />
+        </classes>
+    </test>
+</suite>

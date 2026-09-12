@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Execution Framework - Results & Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --bg-card-hover: rgba(31, 41, 55, 0.85);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(59, 130, 246, 0.4);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            --accent-amber: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1300px;
+            height: 650px;
+            background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.14), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            box-shadow: 0 0 24px rgba(59, 130, 246, 0.45);
+        }
+
+        .logo-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border-color: var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 8px;
+        }
+
+        .btn-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn-success:hover {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        /* Navigation View Switcher Tabs */
+        .view-switcher-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .main-tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 0.3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            gap: 0.35rem;
+        }
+
+        .main-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.6rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-tab-btn:hover {
+            color: #fff;
+        }
+
+        .main-tab-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+
+        /* Date Navigation & Selector Bar */
+        .date-toolbar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.1rem 1.4rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .date-toolbar-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .date-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .date-input {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem 0.9rem;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            color-scheme: dark;
+        }
+
+        .date-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .date-chips {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .date-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .date-chip:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .date-chip.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+            color: #60a5fa;
+        }
+
+        .download-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* 30-Day Activity Strip / Timeline */
+        .timeline-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+
+        .timeline-strip {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: thin;
+        }
+
+        .timeline-day {
+            flex: 1;
+            min-width: 34px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 3px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .timeline-day:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border-hover);
+        }
+
+        .timeline-day.selected {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .timeline-day-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .timeline-day-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .timeline-day-dot.passed { background: var(--accent-emerald); box-shadow: 0 0 6px var(--accent-emerald); }
+        .timeline-day-dot.failed { background: var(--accent-rose); box-shadow: 0 0 6px var(--accent-rose); }
+        .timeline-day-dot.mixed { background: var(--accent-amber); box-shadow: 0 0 6px var(--accent-amber); }
+
+        /* Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.2rem 1.4rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s;
+        }
+
+        .metric-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .metric-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .metric-passed { color: var(--accent-emerald); }
+        .metric-failed { color: var(--accent-rose); }
+        .metric-rate { color: var(--accent-cyan); }
+        .metric-purple { color: var(--accent-purple); }
+
+        /* Controls & Filter Bar */
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 0.25rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            gap: 0.25rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.45rem 0.85rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            color: #fff;
+        }
+
+        .search-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            color: #fff;
+            font-size: 0.88rem;
+            width: 280px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent-blue);
+        }
+
+        /* Results Table Card */
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 0.95rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.88rem;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-ui { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-api { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+        .badge-passed { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-failed { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+        .badge-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        .test-name {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.2rem;
+        }
+
+        .test-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .test-msg {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: #cbd5e1;
+            max-width: 360px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .artifact-links {
+            display: flex;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            flex-wrap: wrap;
+        }
+
+        .artifact-link {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            transition: all 0.15s;
+        }
+
+        .artifact-link:hover {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: var(--accent-cyan);
+        }
+
+        /* Running Banner */
+        .status-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Progress Bars for Summary */
+        .progress-bar-bg {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+            width: 100%;
+            min-width: 100px;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3.5rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .empty-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.4rem;
+        }
+
+        .empty-sub {
+            font-size: 0.85rem;
+            max-width: 450px;
+            margin: 0 auto 1.25rem auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navbar -->
+        <nav class="navbar">
+            <div class="logo-group">
+                <div class="logo-icon">⚡</div>
+                <div>
+                    <h1 class="logo-title">Regression Test Suite Dashboard</h1>
+                    <p class="logo-subtitle">Automated Test Execution & 30-Day Historical Analytics</p>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button id="runBtn" class="btn btn-primary" onclick="triggerRun()">
+                    <span>▶</span> Run Suite (20 Tests)
+                </button>
+                <a href="/swagger-ui/index.html" class="btn btn-secondary">📖 Swagger API</a>
+            </div>
+        </nav>
+
+        <!-- Live Running Banner -->
+        <div id="statusBanner" class="status-banner">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="spinner"></div>
+                <div>
+                    <strong id="bannerTitle">Tests executing in parallel...</strong>
+                    <div id="bannerSub" style="font-size: 0.82rem; color: var(--text-muted);">Executing UI & API test cases. Dashboard will auto-refresh once done.</div>
+                </div>
+            </div>
+            <span id="bannerId" style="font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-cyan);"></span>
+        </div>
+
+        <!-- View Switcher Tabs (Day-wise, Weekly, Monthly) -->
+        <div class="view-switcher-bar">
+            <div class="main-tabs">
+                <button id="tabDay" class="main-tab-btn active" onclick="switchView('day')">
+                    <span>📅</span> Day-Wise Results (30-Day History)
+                </button>
+                <button id="tabWeek" class="main-tab-btn" onclick="switchView('week')">
+                    <span>📊</span> Weekly Summary (7 Days)
+                </button>
+                <button id="tabMonth" class="main-tab-btn" onclick="switchView('month')">
+                    <span>📈</span> Monthly Summary (30 Days)
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== DAY-WISE VIEW ==================== -->
+        <div id="dayView">
+            <!-- Date Toolbar -->
+            <div class="date-toolbar">
+                <div class="date-toolbar-top">
+                    <div class="date-picker-group">
+                        <label for="datePicker" style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted);">Choose Date:</label>
+                        <input type="date" id="datePicker" class="date-input" onchange="onDateChanged(this.value)">
+                        <div class="date-chips">
+                            <button class="date-chip active" id="chipToday" onclick="selectQuickDate(0)">Today</button>
+                            <button class="date-chip" id="chipYesterday" onclick="selectQuickDate(1)">Yesterday</button>
+                            <button class="date-chip" id="chip2Days" onclick="selectQuickDate(2)">2 Days Ago</button>
+                            <button class="date-chip" id="chip7Days" onclick="selectQuickDate(7)">7 Days Ago</button>
+                        </div>
+                    </div>
+                    <!-- Download Date Results -->
+                    <div class="download-group">
+                        <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;">Download Report:</span>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadDateReport('html')">📥 HTML</button>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadDateReport('csv')">📊 CSV</button>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadDateReport('json')">📦 JSON</button>
+                    </div>
+                </div>
+
+                <!-- 30-Day Activity Strip / Calendar timeline -->
+                <div class="timeline-section">
+                    <div class="timeline-header">
+                        <span>Past 30 Days Test Activity (Click any date to inspect)</span>
+                        <span id="activitySpanLabel" style="color: var(--accent-cyan);">Last 30 Days</span>
+                    </div>
+                    <div id="timelineStrip" class="timeline-strip">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric Summary Cards for Selected Date -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Tests Executed <span style="font-size: 0.85rem">🧪</span></div>
+                    <div id="dayTotalTests" class="metric-value">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Passed Tests <span style="font-size: 0.85rem">✅</span></div>
+                    <div id="dayPassedTests" class="metric-value metric-passed">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Failed Tests <span style="font-size: 0.85rem">❌</span></div>
+                    <div id="dayFailedTests" class="metric-value metric-failed">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Pass Rate <span style="font-size: 0.85rem">📈</span></div>
+                    <div id="dayPassRate" class="metric-value metric-rate">--%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Executions Run <span style="font-size: 0.85rem">⚡</span></div>
+                    <div id="dayExecCount" class="metric-value metric-purple">--</div>
+                </div>
+            </div>
+
+            <!-- Execution Run Filter (if multiple executions on selected date) & Search/Filter Controls -->
+            <div class="controls-bar">
+                <div class="filter-tabs">
+                    <button class="tab-btn active" onclick="setTableFilter('ALL', this)">All Tests</button>
+                    <button class="tab-btn" onclick="setTableFilter('UI', this)">UI Tests</button>
+                    <button class="tab-btn" onclick="setTableFilter('API', this)">API Tests</button>
+                    <button class="tab-btn" onclick="setTableFilter('PASSED', this)">Passed</button>
+                    <button class="tab-btn" onclick="setTableFilter('FAILED', this)">Failed</button>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                    <select id="executionFilterSelect" class="date-input" style="padding: 0.45rem 0.8rem; font-size: 0.84rem;" onchange="onExecutionFilterChanged(this.value)">
+                        <option value="ALL">All Executions on this Date</option>
+                    </select>
+                    <input type="text" id="searchInput" class="search-box" placeholder="Search test name, error, ID..." oninput="renderDayTable()">
+                </div>
+            </div>
+
+            <!-- Day Test Results Table -->
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 65px;">ID</th>
+                            <th>Test Case Name</th>
+                            <th style="width: 90px;">Type</th>
+                            <th style="width: 105px;">Status</th>
+                            <th>Execution Output / Error Details</th>
+                            <th style="width: 150px;">Artifacts</th>
+                            <th style="width: 140px;">Executed At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dayTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem;">Loading test results...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==================== WEEKLY / MONTHLY SUMMARY VIEW ==================== -->
+        <div id="periodView" style="display: none;">
+            <div class="date-toolbar">
+                <div class="date-toolbar-top">
+                    <div>
+                        <h2 id="periodTitle" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Weekly Summary</h2>
+                        <p id="periodSubtitle" style="font-size: 0.84rem; color: var(--text-muted); margin-top: 0.2rem;">Last 7 Days Aggregated Analytics</p>
+                    </div>
+                    <div class="download-group">
+                        <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;">Download Period Report:</span>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadPeriodReport('html')">📥 HTML</button>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadPeriodReport('csv')">📊 CSV</button>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadPeriodReport('json')">📦 JSON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Period Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Tests Executed</div>
+                    <div id="periodTotalTests" class="metric-value">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Passed Tests</div>
+                    <div id="periodPassedTests" class="metric-value metric-passed">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Failed Tests</div>
+                    <div id="periodFailedTests" class="metric-value metric-failed">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Overall Pass Rate</div>
+                    <div id="periodPassRate" class="metric-value metric-rate">--%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Executions</div>
+                    <div id="periodExecCount" class="metric-value metric-purple">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">UI vs API Tests</div>
+                    <div id="periodTypeRatio" class="metric-value" style="font-size: 1.4rem; color: var(--accent-cyan); line-height: 2rem;">--</div>
+                </div>
+            </div>
+
+            <!-- Day-by-Day Breakdown Table for the Period -->
+            <div class="table-card">
+                <div style="padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="font-size: 1rem; color: #fff;">Day-by-Day Performance Breakdown</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Click "Inspect Day" to switch to that date</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th style="width: 120px;">Executions</th>
+                            <th style="width: 120px;">Tests Run</th>
+                            <th style="width: 110px;">Passed</th>
+                            <th style="width: 110px;">Failed</th>
+                            <th style="width: 220px;">Pass Rate</th>
+                            <th style="width: 120px; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="periodTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem;">Loading period summary...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentView = 'day'; // 'day' | 'week' | 'month'
+        let selectedDate = getTodayString();
+        let dayData = null;
+        let timelineData = [];
+        let periodData = null;
+        let tableFilter = 'ALL';
+        let selectedExecutionId = 'ALL';
+        let pollTimer = null;
+
+        function getTodayString() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatDateString(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Initialize Date Range Constraints (30 days ago to Today)
+        function initDateConstraints() {
+            const today = new Date();
+            const minDate = new Date();
+            minDate.setDate(today.getDate() - 30);
+
+            const datePicker = document.getElementById('datePicker');
+            datePicker.max = formatDateString(today);
+            datePicker.min = formatDateString(minDate);
+            datePicker.value = selectedDate;
+        }
+
+        // Switch Main Views
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+
+            if (view === 'day') {
+                document.getElementById('tabDay').classList.add('active');
+                document.getElementById('dayView').style.display = 'block';
+                document.getElementById('periodView').style.display = 'none';
+                loadDayView();
+            } else if (view === 'week') {
+                document.getElementById('tabWeek').classList.add('active');
+                document.getElementById('dayView').style.display = 'none';
+                document.getElementById('periodView').style.display = 'block';
+                loadPeriodView('week');
+            } else if (view === 'month') {
+                document.getElementById('tabMonth').classList.add('active');
+                document.getElementById('dayView').style.display = 'none';
+                document.getElementById('periodView').style.display = 'block';
+                loadPeriodView('month');
+            }
+        }
+
+        // Date selection change handlers
+        function onDateChanged(dateStr) {
+            if (!dateStr) return;
+            selectedDate = dateStr;
+            updateChipsUI();
+            loadDayView();
+        }
+
+        function selectQuickDate(daysAgo) {
+            const d = new Date();
+            d.setDate(d.getDate() - daysAgo);
+            selectedDate = formatDateString(d);
+            document.getElementById('datePicker').value = selectedDate;
+            updateChipsUI();
+            loadDayView();
+        }
+
+        function updateChipsUI() {
+            const today = getTodayString();
+            const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+            const yesterday = formatDateString(yesterdayDate);
+            const twoDaysDate = new Date(); twoDaysDate.setDate(twoDaysDate.getDate() - 2);
+            const twoDays = formatDateString(twoDaysDate);
+            const sevenDaysDate = new Date(); sevenDaysDate.setDate(sevenDaysDate.getDate() - 7);
+            const sevenDays = formatDateString(sevenDaysDate);
+
+            document.getElementById('chipToday').classList.toggle('active', selectedDate === today);
+            document.getElementById('chipYesterday').classList.toggle('active', selectedDate === yesterday);
+            document.getElementById('chip2Days').classList.toggle('active', selectedDate === twoDays);
+            document.getElementById('chip7Days').classList.toggle('active', selectedDate === sevenDays);
+        }
+
+        // Fetch Day Data
+        async function loadDayView() {
+            try {
+                // 1. Fetch 30-day timeline history for the strip
+                const histRes = await fetch('/tests/history/30days?days=30');
+                if (histRes.ok) {
+                    timelineData = await histRes.json();
+                    renderTimelineStrip();
+                }
+
+                // 2. Fetch selected date results
+                const res = await fetch(`/tests/by-date?date=${selectedDate}`);
+                if (res.ok) {
+                    dayData = await res.json();
+                    updateDayMetrics();
+                    populateExecutionDropdown();
+                    renderDayTable();
+                }
+            } catch (e) {
+                console.error("Error loading day view:", e);
+            }
+        }
+
+        // Render 30-Day Activity Strip
+        function renderTimelineStrip() {
+            const strip = document.getElementById('timelineStrip');
+            if (!timelineData || timelineData.length === 0) return;
+
+            strip.innerHTML = timelineData.map(item => {
+                const isSelected = item.date === selectedDate;
+                const d = new Date(item.date + 'T00:00:00');
+                const dayNum = d.getDate();
+                const monthName = d.toLocaleString('en-US', { month: 'short' });
+
+                let dotClass = '';
+                let dotTitle = `${item.date}: No executions`;
+                if (item.totalTests > 0) {
+                    if (item.failedTests > 0 && item.passedTests > 0) {
+                        dotClass = 'mixed';
+                        dotTitle = `${item.date}: ${item.passedTests} Passed, ${item.failedTests} Failed`;
+                    } else if (item.failedTests > 0) {
+                        dotClass = 'failed';
+                        dotTitle = `${item.date}: ${item.failedTests} Failed`;
+                    } else {
+                        dotClass = 'passed';
+                        dotTitle = `${item.date}: ${item.passedTests} Passed (100%)`;
+                    }
+                }
+
+                return `
+                    <div class="timeline-day ${isSelected ? 'selected' : ''}" onclick="onDateChanged('${item.date}')" title="${dotTitle}">
+                        <div class="timeline-day-label">${monthName}<br><strong>${dayNum}</strong></div>
+                        <div class="timeline-day-dot ${dotClass}"></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update Day Metrics Cards
+        function updateDayMetrics() {
+            if (!dayData) return;
+            document.getElementById('dayTotalTests').innerText = dayData.totalTests || 0;
+            document.getElementById('dayPassedTests').innerText = dayData.passedTests || 0;
+            document.getElementById('dayFailedTests').innerText = dayData.failedTests || 0;
+            document.getElementById('dayPassRate').innerText = `${dayData.passRate || 0}%`;
+            document.getElementById('dayExecCount').innerText = dayData.executionCount || (dayData.executions ? dayData.executions.length : 0);
+        }
+
+        // Populate Execution filter select dropdown
+        function populateExecutionDropdown() {
+            const select = document.getElementById('executionFilterSelect');
+            select.innerHTML = `<option value="ALL">All Executions on this Date (${dayData.executions ? dayData.executions.length : 0} runs)</option>`;
+
+            if (dayData && dayData.executions) {
+                dayData.executions.forEach(exec => {
+                    const time = exec.startTime ? new Date(exec.startTime).toLocaleTimeString() : '';
+                    const label = `${exec.executionId} (${time} - ${exec.mode || 'PARALLEL'} - ${exec.status})`;
+                    const opt = document.createElement('option');
+                    opt.value = exec.executionId;
+                    opt.innerText = label;
+                    select.appendChild(opt);
+                });
+            }
+            select.value = selectedExecutionId = 'ALL';
+        }
+
+        function onExecutionFilterChanged(execId) {
+            selectedExecutionId = execId;
+            renderDayTable();
+        }
+
+        function setTableFilter(filter, el) {
+            tableFilter = filter;
+            document.querySelectorAll('#dayView .tab-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            renderDayTable();
+        }
+
+        // Render Day Results Table
+        function renderDayTable() {
+            const tbody = document.getElementById('dayTableBody');
+            if (!dayData || !dayData.results || dayData.results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-icon">📅</div>
+                                <div class="empty-title">No test results found for ${selectedDate}</div>
+                                <div class="empty-sub">No test executions were recorded on this date. You can select another date from the 30-day strip above or trigger a test run for today.</div>
+                                <button class="btn btn-primary btn-sm" onclick="selectQuickDate(0); triggerRun();">▶ Run Test Suite For Today</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = dayData.results.filter(r => {
+                if (selectedExecutionId !== 'ALL' && r.executionId !== selectedExecutionId) {
+                    return false;
+                }
+
+                const status = (r.status || 'PENDING').toUpperCase();
+                const type = (r.testCaseType || 'UI').toUpperCase();
+
+                if (tableFilter === 'UI' && type !== 'UI') return false;
+                if (tableFilter === 'API' && type !== 'API') return false;
+                if (tableFilter === 'PASSED' && status !== 'PASSED') return false;
+                if (tableFilter === 'FAILED' && status !== 'FAILED') return false;
+
+                if (search) {
+                    const matchName = (r.testCaseName || '').toLowerCase().includes(search);
+                    const matchDesc = (r.testCaseDescription || '').toLowerCase().includes(search);
+                    const matchMsg = (r.message || '').toLowerCase().includes(search);
+                    const matchExec = (r.executionId || '').toLowerCase().includes(search);
+                    const matchId = String(r.testCaseId || '').includes(search);
+                    if (!matchName && !matchDesc && !matchMsg && !matchExec && !matchId) return false;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">No test cases match active filter on this date.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(r => {
+                const status = (r.status || 'PENDING').toUpperCase();
+                const statusBadge = status === 'PASSED' ? '<span class="badge badge-passed">PASSED</span>'
+                                 : status === 'FAILED' ? '<span class="badge badge-failed">FAILED</span>'
+                                 : '<span class="badge badge-pending">PENDING</span>';
+                const type = (r.testCaseType || 'UI').toUpperCase();
+                const typeBadge = type === 'UI' ? '<span class="badge badge-ui">UI</span>' : '<span class="badge badge-api">API</span>';
+                const msg = r.message || (status === 'PASSED' ? 'Execution completed successfully' : 'No output');
+                const time = r.executedAt ? new Date(r.executedAt).toLocaleTimeString() : '--';
+
+                let artifactsHtml = '<span style="color: var(--text-muted); font-size: 0.8rem;">None</span>';
+                const links = [];
+                if (r.screenshotPath) links.push(`<a class="artifact-link" href="/${r.screenshotPath.replace(/\\/g, '/')}" target="_blank">📸 screenshot</a>`);
+                if (r.apiRequestPath) links.push(`<a class="artifact-link" href="/${r.apiRequestPath.replace(/\\/g, '/')}" target="_blank">📤 request</a>`);
+                if (r.apiResponsePath) links.push(`<a class="artifact-link" href="/${r.apiResponsePath.replace(/\\/g, '/')}" target="_blank">📥 response</a>`);
+                if (links.length > 0) artifactsHtml = `<div class="artifact-links">${links.join('')}</div>`;
+
+                return `
+                    <tr>
+                        <td style="font-family: var(--font-mono); color: var(--text-muted);">#${r.testCaseId || r.id}</td>
+                        <td>
+                            <div class="test-name">${r.testCaseName || 'Test Case'}</div>
+                            <div class="test-desc">${r.testCaseDescription || ''}</div>
+                        </td>
+                        <td>${typeBadge}</td>
+                        <td>${statusBadge}</td>
+                        <td><div class="test-msg" title="${msg.replace(/"/g, '&quot;')}">${msg}</div></td>
+                        <td>${artifactsHtml}</td>
+                        <td style="color: var(--text-muted); font-size: 0.82rem; font-family: var(--font-mono);">${time}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Load Period View (Weekly or Monthly)
+        async function loadPeriodView(period) {
+            const url = period === 'month' ? '/tests/summary/monthly' : '/tests/summary/weekly';
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    periodData = await res.json();
+                    renderPeriodView(period);
+                }
+            } catch (e) {
+                console.error("Error loading period summary:", e);
+            }
+        }
+
+        function renderPeriodView(period) {
+            if (!periodData) return;
+            const isMonth = period === 'month';
+            document.getElementById('periodTitle').innerText = isMonth ? 'Monthly Test Execution Summary' : 'Weekly Test Execution Summary';
+            document.getElementById('periodSubtitle').innerText = `Period: ${periodData.startDate} to ${periodData.endDate} (${isMonth ? 'Last 30 Days' : 'Last 7 Days'})`;
+
+            document.getElementById('periodTotalTests').innerText = periodData.totalTests;
+            document.getElementById('periodPassedTests').innerText = periodData.passedTests;
+            document.getElementById('periodFailedTests').innerText = periodData.failedTests;
+            document.getElementById('periodPassRate').innerText = `${periodData.passRate}%`;
+            document.getElementById('periodExecCount').innerText = periodData.totalExecutions;
+            document.getElementById('periodTypeRatio').innerText = `UI: ${periodData.uiTestsCount} | API: ${periodData.apiTestsCount}`;
+
+            const tbody = document.getElementById('periodTableBody');
+            if (!periodData.dailyBreakdown || periodData.dailyBreakdown.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No execution data for this period.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = periodData.dailyBreakdown.map(day => {
+                const d = new Date(day.date + 'T00:00:00');
+                const formattedDate = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                const rate = day.passRate || 0;
+
+                return `
+                    <tr>
+                        <td>
+                            <strong style="color: #fff;">${formattedDate}</strong>
+                            <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-muted);">${day.date}</div>
+                        </td>
+                        <td style="font-family: var(--font-mono);">${day.executionCount}</td>
+                        <td style="font-family: var(--font-mono); font-weight: 600;">${day.totalTests}</td>
+                        <td style="color: var(--accent-emerald); font-weight: 600;">${day.passedTests}</td>
+                        <td style="color: var(--accent-rose); font-weight: 600;">${day.failedTests}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: ${rate}%;"></div>
+                                </div>
+                                <span style="font-size: 0.84rem; font-weight: 700; color: var(--accent-cyan); min-width: 45px;">${rate}%</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-secondary btn-sm" onclick="jumpToDate('${day.date}')">🔍 Inspect Day</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function jumpToDate(dateStr) {
+            selectedDate = dateStr;
+            document.getElementById('datePicker').value = selectedDate;
+            updateChipsUI();
+            switchView('day');
+        }
+
+        // Trigger Suite Run
+        async function triggerRun() {
+            const btn = document.getElementById('runBtn');
+            const banner = document.getElementById('statusBanner');
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            banner.style.display = 'flex';
+
+            try {
+                const res = await fetch('/schedule/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ suiteId: 'COMBINED_SMOKE', mode: 'PARALLEL', maxParallelTests: 8, headless: false })
+                });
+                const data = await res.json();
+                const execId = data.executionId;
+                document.getElementById('bannerId').innerText = `ID: ${execId}`;
+
+                // Poll status
+                if (pollTimer) clearInterval(pollTimer);
+                pollTimer = setInterval(async () => {
+                    const statusRes = await fetch(`/schedule/execution/status/${execId}`);
+                    if (statusRes.ok) {
+                        const s = await statusRes.json();
+                        if (s.status === 'COMPLETED' || s.status === 'FAILED') {
+                            clearInterval(pollTimer);
+                            banner.style.display = 'none';
+                            btn.disabled = false;
+                            btn.style.opacity = '1';
+                            // Select today and refresh
+                            selectQuickDate(0);
+                        }
+                    }
+                }, 3000);
+            } catch (e) {
+                alert("Failed to start run: " + e.message);
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                banner.style.display = 'none';
+            }
+        }
+
+        // Download Report Handlers
+        function downloadDateReport(type) {
+            window.open(`/reports/date/download?date=${selectedDate}&type=${type}`, '_blank');
+        }
+
+        function downloadPeriodReport(type) {
+            const period = currentView === 'month' ? 'month' : 'week';
+            window.open(`/reports/period/download?period=${period}&type=${type}`, '_blank');
+        }
+
+        // Initialize on load
+        initDateConstraints();
+        updateChipsUI();
+        loadDayView();
+
+        // Auto-refresh current view every 15s
+        setInterval(() => {
+            if (currentView === 'day') loadDayView();
+            else if (currentView === 'week') loadPeriodView('week');
+            else if (currentView === 'month') loadPeriodView('month');
+        }, 15000);
+    </script>
+</body>
+</html>

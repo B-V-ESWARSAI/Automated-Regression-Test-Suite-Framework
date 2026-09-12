@@ -21,8 +21,8 @@ public class TestScheduler {
         this.suiteRegistry = suiteRegistry;
     }
 
-    // Default daily schedule at 03:00 AM local time - run combined (UI + API)
-    @Scheduled(cron = "0 0 3 * * *")
+    // Daily schedule at 11:26 AM local time - run combined (UI + API)
+    @Scheduled(cron = "0 26 11 * * *")
     public void runDailyCombinedSuite() {
         List<Long> uiIds = suiteRegistry.resolveSuiteToTestCaseIds("BLAZE_SMOKE").orElse(List.of());
         List<Long> apiIds = suiteRegistry.resolveSuiteToTestCaseIds("REQRES_SMOKE").orElse(List.of());

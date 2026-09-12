@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Test outputs & execution artifacts ###
+artifacts/
+test-output/
